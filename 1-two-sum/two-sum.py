@@ -1,4 +1,4 @@
-class Solution:
+class Student:
     def twoSum(self, nums: list[int], target: int) -> list[int]:
         num_map = {}
         for i, num in enumerate(nums):
