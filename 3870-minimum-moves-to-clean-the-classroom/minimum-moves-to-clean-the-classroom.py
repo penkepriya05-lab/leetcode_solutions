@@ -1,53 +1,52 @@
 from collections import deque
-
 class Solution:
-    def minMoves(self, classroom, energy):
-        m, n = len(classroom), len(classroom[0])
-        litter = {}
+    def minMoves(self, classroom: list[str], energy: int) -> int:
+        m = len(classroom)
+        n = len(classroom[0])
         start = None
-        k = 0
-
+        litter = {}
         for i in range(m):
             for j in range(n):
                 if classroom[i][j] == 'S':
                     start = (i, j)
                 elif classroom[i][j] == 'L':
-                    litter[(i, j)] = k
-                    k += 1
-
-        target = (1 << k) - 1
-        q = deque([(start[0], start[1], energy, 0, 0)])
-        seen = {(start[0], start[1], energy, 0)}
-
+                    litter[(i, j)] = len(litter)
+        if not litter:
+            return 0
+        total_litter = len(litter)
+        target = (1 << total_litter) - 1
+        q = deque()
+        q.append((start[0], start[1], 0, energy, 0))
+        visited = set()
+        visited.add((start[0], start[1], 0, energy))
+        directions = [
+            (1, 0),
+            (-1, 0),
+            (0, 1),
+            (0, -1)
+        ]
         while q:
-            r, c, e, mask, moves = q.popleft()
-
+            r, c, mask, e, moves = q.popleft()
             if mask == target:
                 return moves
-
             if e == 0:
                 continue
-
-            for dr, dc in [(1,0), (-1,0), (0,1), (0,-1)]:
-                nr, nc = r + dr, c + dc
-
+            for dr, dc in directions:
+                nr = r + dr
+                nc = c + dc
                 if nr < 0 or nr >= m or nc < 0 or nc >= n:
                     continue
                 if classroom[nr][nc] == 'X':
                     continue
-
-                ne = e - 1
+                new_energy = e - 1
+                new_mask = mask
+                if classroom[nr][nc] == 'L':
+                    idx = litter[(nr, nc)]
+                    new_mask |= (1 << idx)
                 if classroom[nr][nc] == 'R':
-                    ne = energy
-
-                nmask = mask
-                if (nr, nc) in litter:
-                    nmask |= 1 << litter[(nr, nc)]
-
-                state = (nr, nc, ne, nmask)
-
-                if state not in seen:
-                    seen.add(state)
-                    q.append((nr, nc, ne, nmask, moves + 1))
-
+                    new_energy = energy
+                state = (nr, nc, new_mask, new_energy)
+                if state not in visited:
+                    visited.add(state)
+                    q.append((nr, nc, new_mask, new_energy, moves + 1))
         return -1
